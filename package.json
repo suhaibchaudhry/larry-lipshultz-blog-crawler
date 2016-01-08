@@ -7,5 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Asad Hasan",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "nightmare": "^2.1.2",
+    "vo": "^1.0.3"
+  }
 }
