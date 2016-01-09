@@ -14,8 +14,9 @@ function *run() {
 	var j = 0;
   var lastPage;
   var item;
-//  var items = [];
+  var items = [];
   var lastPage = false;
+  var firstPage = true;
   yield nightmare
   .useragent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36")
   .goto("http://www.larrylipshultz.com/blog")
@@ -34,14 +35,14 @@ function *run() {
     .wait('.pagination')
     //Click read more button of current post.
     .click('#post_list .post:nth-child('+(((i-1)*2)+6)+') .meta.last-child a')/*.wait('h1.ng-binding')*/
-    .wait(1000)
+    .wait(500)
     //Wait for third breadcrumb to be available, suggesting inside page has loaded.
     .wait('#breadcrumb li:nth-child(3)')
     //Extract Fields.
     .evaluate(function() {
       var item = {};
       item['title'] = $('.headline').text();
-      item['tags'] = $('.info a').map(function() {return $(this).text()}).toArray();
+      item['tags'] = $('.info a').map(function() {return $(this).text()}).toArray().join(',');
       //Remove all tags
       $('.info a').remove();
       //Tokenize Remaining Info
@@ -49,14 +50,16 @@ function *run() {
       item['author'] = info[1];
       //Convert time to unix time stamp and Bump up created time to 12 PM.
       item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
-      item['body'] = $('.body').html();
+      //item['body'] = $('.body').html();
       return item;
     });
     yield nightmare.back().wait('.pagination');
-    //items.push(item);
-    console.log(toCsv(item));
+    items.push(item);
+    //console.log(item);
     //On last item.
     if(i == perpage) {
+      console.log(toCsv(items, firstPage));
+      items = [];
       //Figure out if we are on the last page.
       lastPage = yield nightmare.evaluate(function() {
         return !Boolean($('.pagination .next a').length);
@@ -67,6 +70,7 @@ function *run() {
       } else {
         //Reset for next page and go.
         i = 0;
+        firstPage = false;
         yield nightmare.click('.pagination .next a');
       }
     }
@@ -107,7 +111,7 @@ function toCsvValue(theValue, sDelimiter) {
 * @param {string} cDelimiter The column delimiter.  Defaults to a comma (,) if omitted.
 * @return {string} The CSV equivalent of objArray.
 */
-function toCsv(objArray, sDelimiter, cDelimiter) {
+function toCsv(objArray, header, sDelimiter, cDelimiter) {
 	var i, l, names = [], name, value, obj, row, output = "", n, nl;
 
 	// Initialize default parameters.
@@ -116,6 +120,10 @@ function toCsv(objArray, sDelimiter, cDelimiter) {
 	}
 	if (typeof (cDelimiter) === "undefined" || cDelimiter === null) {
 		cDelimiter = ",";
+	}
+
+  if (typeof (header) === "undefined" || header === null) {
+		header = false;
 	}
 
 	for (i = 0, l = objArray.length; i < l; i += 1) {
@@ -131,10 +139,14 @@ function toCsv(objArray, sDelimiter, cDelimiter) {
 				}
 			}
 			row = row.substring(0, row.length - 1);
-			output += row;
+      if(header) {
+			     output += row;
+      }
 		}
 
-		output += "\n";
+    if(header) {
+		    output += "\n";
+    }
 		row = "";
 		for (n = 0, nl = names.length; n < nl; n += 1) {
 			name = names[n];
