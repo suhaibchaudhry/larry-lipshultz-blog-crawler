@@ -15,6 +15,7 @@ function *run() {
   var lastPage;
   var item;
   var items = [];
+  var lastPage = false;
   yield nightmare
   .useragent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36")
   .goto("http://www.larrylipshultz.com/blog")
@@ -38,6 +39,11 @@ function *run() {
     yield nightmare.back().wait('.pagination');
     items.push(item);
     console.log(item);
+    if(i == perpage) {
+      lastPage = yield nightmare.evaluate(function() {
+        return !Boolean($('.pagination .next a').length);
+      });
+    }
     i++;
   }
 
