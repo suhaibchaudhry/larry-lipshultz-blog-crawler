@@ -153,7 +153,10 @@ function toCsv(objArray, header, sDelimiter, cDelimiter) {
 			}
 			row += toCsvValue(value, '"');
 		}
-		output += row+"\n";
+		output += row;
+    if(i != l-1) {
+      output += "\n";
+    }
 	}
 
 	return output;
