@@ -40,6 +40,8 @@ function *run() {
     //Extract Fields.
     .evaluate(function() {
       var item = {};
+      item['title'] = $('.headline').text();
+      item['tags'] = $('.info a').map(function() {return $(this).text()});
       item['body'] = $('.body').html();
       return item;
     });
