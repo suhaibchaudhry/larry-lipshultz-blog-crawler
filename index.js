@@ -50,7 +50,7 @@ function *run() {
       item['author'] = info[1];
       //Convert time to unix time stamp and Bump up created time to 12 PM.
       item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
-      //item['body'] = $('.body').html();
+      item['body'] = $('.body').html();
       return item;
     });
     yield nightmare.back().wait('.pagination');
