@@ -10,7 +10,7 @@ function *run() {
 	var skipPages = 0;
   var perpage = 10;
   var nightmare = Nightmare();
-  var i = 0;
+  var i = 1;
 	var j = 0;
   var lastPage;
   var item;
@@ -20,14 +20,15 @@ function *run() {
   .goto("http://www.larrylipshultz.com/blog")
   .wait();
 
-  while(i < perpage) {
+  while(i <= perpage) {
     item = yield nightmare
     //.wait(500).screenshot('scr2.png')
     .wait('.pagination')
     //.wait(500).screenshot('scr3.png')
     .click('#post_list .post:nth-child('+i*6+') .meta.last-child a')/*.wait('h1.ng-binding')*/
     //.wait(500).screenshot('scr4.png')
-    .wait('ul#breadcrumb li:nth-child(3)')
+    .wait(1000)
+    .wait('p.headline')
     //.wait(500).screenshot('scr5.png')
     .evaluate(function() {
       var item = {};
