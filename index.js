@@ -41,7 +41,7 @@ function *run() {
     .evaluate(function() {
       var item = {};
       item['title'] = $('.headline').text();
-      item['tags'] = $('.info a').map(function() {return $(this).text()});
+      item['tags'] = $('.info a').map(function() {return $(this).text()}).toArray();
       //Remove all tags
       $('.info a').remove();
       //Tokenize Remaining Info
