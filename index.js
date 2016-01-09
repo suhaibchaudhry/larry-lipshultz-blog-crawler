@@ -42,6 +42,13 @@ function *run() {
       var item = {};
       item['title'] = $('.headline').text();
       item['tags'] = $('.info a').map(function() {return $(this).text()});
+      //Remove all tags
+      $('.info a').remove();
+      //Tokenize Remaining Info
+      var info = $('.info').text().split(/\W{2,}by\W*|\W{4,}/);
+      item['author'] = info[1];
+      //Convert time to unix time stamp and Bump up created time to 12 PM.
+      item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
       item['body'] = $('.body').html();
       return item;
     });
