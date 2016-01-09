@@ -140,13 +140,10 @@ function toCsv(objArray, header, sDelimiter, cDelimiter) {
 			}
 			row = row.substring(0, row.length - 1);
       if(header) {
-			     output += row;
+			     output += row+"\n";
       }
 		}
 
-    if(header) {
-		    output += "\n";
-    }
 		row = "";
 		for (n = 0, nl = names.length; n < nl; n += 1) {
 			name = names[n];
@@ -156,7 +153,7 @@ function toCsv(objArray, header, sDelimiter, cDelimiter) {
 			}
 			row += toCsvValue(value, '"');
 		}
-		output += row;
+		output += row+"\n";
 	}
 
 	return output;
