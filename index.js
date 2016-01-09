@@ -33,7 +33,7 @@ function *run() {
     //Wait for index page to load.
     .wait('.pagination')
     //Click read more button of current post.
-    .click('#post_list .post:nth-child('+i*6+') .meta.last-child a')/*.wait('h1.ng-binding')*/
+    .click('#post_list .post:nth-child('+(((i-1)*2)+6)+') .meta.last-child a')/*.wait('h1.ng-binding')*/
     .wait(1000)
     //Wait for third breadcrumb to be available, suggesting inside page has loaded.
     .wait('#breadcrumb li:nth-child(3)')
