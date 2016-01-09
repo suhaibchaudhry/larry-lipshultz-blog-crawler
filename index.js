@@ -96,7 +96,7 @@ function toCsvValue(theValue, sDelimiter) {
 	if (t === "undefined" || t === null) {
 		output = "";
 	} else if (t === "string") {
-		output = sDelimiter + theValue.replace(/\"/g, '""') + sDelimiter;
+		output = sDelimiter + theValue.replace(/\"/g, '""').replace(/\r/g, '') + sDelimiter;
 	} else {
 		output = String(theValue);
 	}
