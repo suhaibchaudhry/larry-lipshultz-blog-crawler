@@ -28,7 +28,7 @@ function *run() {
     .click('#post_list .post:nth-child('+i*6+') .meta.last-child a')/*.wait('h1.ng-binding')*/
     //.wait(500).screenshot('scr4.png')
     .wait(1000)
-    .wait('p.headline')
+    .wait('#breadcrumb li:nth-child(3)')
     //.wait(500).screenshot('scr5.png')
     .evaluate(function() {
       var item = {};
