@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-Emitter.defaultMaxListeners = 0;
 var Nightmare = require('nightmare');
 var vo = require('vo');
 
@@ -8,6 +7,7 @@ vo(run)(function(err, result) {
 });
 
 function *run() {
+  redirected = false;
   var perpage = 10;
   var nightmare = Nightmare();
   var i = 1;
@@ -17,12 +17,15 @@ function *run() {
   var items = [];
   var lastPage = false;
   var firstPage = true;
-  var redirected = false;
   var indexPage = "http://www.larrylipshultz.com/blog?page=7";
   yield nightmare
   .useragent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36")
   .goto(indexPage)
   .wait();
+
+  yield nightmare.on('did-get-redirect-request', function(h) {
+    redirected = true;
+  });
 
   while(i <= perpage) {
     redirected = false;
@@ -39,11 +42,7 @@ function *run() {
     //Click read more button of current post.
     .click('#post_list .post:nth-child('+(((i-1)*2)+6)+') .meta.last-child a')/*.wait('h1.ng-binding')*/
     .wait(1000);
-
-    yield nightmare.on('did-get-redirect-request', function(h) {
-      redirected = true;
-    });
-
+    //console.log(redirected);
     //Extract Fields.
     if(redirected) {
       //Get summary if page is broken due to redirect.
@@ -59,11 +58,11 @@ function *run() {
         item['author'] = info[1];
         //Convert time to unix time stamp and Bump up created time to 12 PM.
         item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
-        //item['body'] = $post.find('.body').html();
+        item['body'] = $post.find('.body').html();
         item['path'] = $post.find('h2.title a').attr('href').substr(1);
         return item;
       }, i);
-      console.log(item);
+      //console.log(item);
     } else {
       //Wait for third breadcrumb to be available, suggesting inside page has loaded.
       item = yield nightmare.wait('#breadcrumb li:nth-child(3)').evaluate(function() {
@@ -77,7 +76,7 @@ function *run() {
         item['author'] = info[1];
         //Convert time to unix time stamp and Bump up created time to 12 PM.
         item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
-        //item['body'] = $('.body').html();
+        item['body'] = $('.body').html();
         item['path'] = window.location.pathname.substr(1);
         return item;
       });
