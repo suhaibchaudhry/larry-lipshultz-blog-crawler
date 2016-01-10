@@ -66,6 +66,7 @@ function *run() {
         //Convert time to unix time stamp and Bump up created time to 12 PM.
         item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
         item['body'] = $post.find('.body').html();
+	item['summary'] = $post.find('.body').html();
         item['path'] = $post.find('h2.title a').attr('href').substr(1);
         return item;
       }, i);
