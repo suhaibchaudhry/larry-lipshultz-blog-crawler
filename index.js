@@ -11,7 +11,7 @@ function *run() {
   var perpage = 10;
   var nightmare = Nightmare();
   var i = 1;
-	var j = 0;
+  var j = 0;
   var lastPage;
   var item;
   var items = [];
@@ -50,10 +50,12 @@ function *run() {
         var item = {};
         var $post = $('#post_list .post:nth-child('+(((i-1)*2)+6)+')');
         item['title'] =  $post.find('h2.title').text();
+	item['subhead'] = $('h1.sub-headline').text();
         item['tags'] = $post.find('.info a').map(function() {return $(this).text()}).toArray().join(',');
         //Remove all tags
         $post.find('.info a').remove();
-        //Tokenize Remaining Info
+	 
+       //Tokenize Remaining Info
         var info = $post.find('.info').text().split(/\W{2,}by\W*|\W{4,}/);
         item['author'] = info[1];
         //Convert time to unix time stamp and Bump up created time to 12 PM.
@@ -68,6 +70,7 @@ function *run() {
       item = yield nightmare.wait('#breadcrumb li:nth-child(3)').evaluate(function() {
         var item = {};
         item['title'] = $('.headline').text();
+	item['subhead'] = $('#main h1').text();
         item['tags'] = $('.info a').map(function() {return $(this).text()}).toArray().join(',');
         //Remove all tags
         $('.info a').remove();
