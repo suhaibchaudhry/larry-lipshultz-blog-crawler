@@ -7,7 +7,6 @@ vo(run)(function(err, result) {
 });
 
 function *run() {
-	var skipPages = 0;
   var perpage = 10;
   var nightmare = Nightmare();
   var i = 1;
@@ -17,12 +16,15 @@ function *run() {
   var items = [];
   var lastPage = false;
   var firstPage = true;
+  var redirected = false;
+  var indexPage = "http://www.larrylipshultz.com/blog?page=7";
   yield nightmare
   .useragent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36")
-  .goto("http://www.larrylipshultz.com/blog")
+  .goto(indexPage)
   .wait();
 
   while(i <= perpage) {
+    redirected = false;
     if(i == 1) {
       //Reset number of items per page.
       perpage = yield nightmare.wait('#post_list').evaluate(function() {
@@ -30,33 +32,58 @@ function *run() {
       });
     }
 
-    item = yield nightmare
+    yield nightmare
     //Wait for index page to load.
     .wait('.pagination')
     //Click read more button of current post.
     .click('#post_list .post:nth-child('+(((i-1)*2)+6)+') .meta.last-child a')/*.wait('h1.ng-binding')*/
-    .wait(500)
-    //Wait for third breadcrumb to be available, suggesting inside page has loaded.
-    .wait('#breadcrumb li:nth-child(3)')
-    //Extract Fields.
-    .evaluate(function() {
-      var item = {};
-      item['title'] = $('.headline').text();
-      item['tags'] = $('.info a').map(function() {return $(this).text()}).toArray().join(',');
-      //Remove all tags
-      $('.info a').remove();
-      //Tokenize Remaining Info
-      var info = $('.info').text().split(/\W{2,}by\W*|\W{4,}/);
-      item['author'] = info[1];
-      //Convert time to unix time stamp and Bump up created time to 12 PM.
-      item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
-      item['body'] = $('.body').html();
-      item['path'] = window.location.pathname.substr(1);
-      return item;
+    .wait(500);
+
+    yield nightmare.on('did-get-redirect-request', function(h) {
+      redirected = true;
     });
-    yield nightmare.back().wait('.pagination');
+
+    //Extract Fields.
+    if(redirected) {
+      //Get summary if page is broken due to redirect.
+      item  = yield nightmare.back().wait('.pagination').evaluate(function(i) {
+        var item = {};
+        var $post = $('#post_list .post:nth-child('+(((i-1)*2)+6)+')');
+        item['title'] =  $post.find('h2.title').text();
+        item['tags'] = $post.find('.info a').map(function() {return $(this).text()}).toArray().join(',');
+        //Remove all tags
+        $post.find('.info a').remove();
+        //Tokenize Remaining Info
+        var info = $post.find('.info').text().split(/\W{2,}by\W*|\W{4,}/);
+        item['author'] = info[1];
+        //Convert time to unix time stamp and Bump up created time to 12 PM.
+        item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
+        //item['body'] = $post.find('.body').html();
+        item['path'] = $post.find('h2.title a').attr('href').substr(1);
+        return item;
+      }, i);
+      console.log(item);
+    } else {
+      //Wait for third breadcrumb to be available, suggesting inside page has loaded.
+      item = yield nightmare.wait('#breadcrumb li:nth-child(3)').evaluate(function() {
+        var item = {};
+        item['title'] = $('.headline').text();
+        item['tags'] = $('.info a').map(function() {return $(this).text()}).toArray().join(',');
+        //Remove all tags
+        $('.info a').remove();
+        //Tokenize Remaining Info
+        var info = $('.info').text().split(/\W{2,}by\W*|\W{4,}/);
+        item['author'] = info[1];
+        //Convert time to unix time stamp and Bump up created time to 12 PM.
+        item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
+        //item['body'] = $('.body').html();
+        item['path'] = window.location.pathname.substr(1);
+        return item;
+      });
+      yield nightmare.back().wait('.pagination');
+    }
     items.push(item);
-    //console.log(item);
+
     //On last item.
     if(i == perpage) {
       console.log(toCsv(items, firstPage));
