@@ -16,6 +16,7 @@ function *run() {
   var item;
   var items = [];
   var lastPage = false;
+  var summary = "";
   var firstPage = true;
   var indexPage = "http://www.larrylipshultz.com/blog";
   yield nightmare
@@ -38,9 +39,13 @@ function *run() {
 
     yield nightmare
     //Wait for index page to load.
-    .wait('.pagination')
+    .wait('.pagination');
+    summary = yield nightmare.evaluate(function() {
+	var $post = $('#post_list .post:nth-child('+(((i-1)*2)+6)+')');
+        return $post.find('.body').html(); 
+    }, i);
     //Click read more button of current post.
-    .click('#post_list .post:nth-child('+(((i-1)*2)+6)+') .meta.last-child a')/*.wait('h1.ng-binding')*/
+    yield nightmare.click('#post_list .post:nth-child('+(((i-1)*2)+6)+') .meta.last-child a')/*.wait('h1.ng-binding')*/
     .wait(1000);
     //console.log(redirected);
     //Extract Fields.
@@ -67,7 +72,7 @@ function *run() {
       //console.log(item);
     } else {
       //Wait for third breadcrumb to be available, suggesting inside page has loaded.
-      item = yield nightmare.wait('#breadcrumb li:nth-child(3)').evaluate(function() {
+      item = yield nightmare.wait('#breadcrumb li:nth-child(3)').evaluate(function(summary) {
         var item = {};
         item['title'] = $('.headline').text();
 	item['subhead'] = $('#main h1').text();
@@ -80,9 +85,10 @@ function *run() {
         //Convert time to unix time stamp and Bump up created time to 12 PM.
         item['created'] = Math.floor(new Date(info[0]).getTime()/1000)+(12*60*60);
         item['body'] = $('.body').html();
+	item['summary'] = summary;
         item['path'] = window.location.pathname.substr(1);
         return item;
-      });
+      }, summary);
       yield nightmare.back().wait('.pagination');
     }
     items.push(item);
