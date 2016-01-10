@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+Emitter.defaultMaxListeners = 0;
 var Nightmare = require('nightmare');
 var vo = require('vo');
 
