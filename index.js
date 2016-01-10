@@ -40,7 +40,7 @@ function *run() {
     yield nightmare
     //Wait for index page to load.
     .wait('.pagination');
-    summary = yield nightmare.evaluate(function() {
+    summary = yield nightmare.evaluate(function(i) {
 	var $post = $('#post_list .post:nth-child('+(((i-1)*2)+6)+')');
         return $post.find('.body').html(); 
     }, i);
