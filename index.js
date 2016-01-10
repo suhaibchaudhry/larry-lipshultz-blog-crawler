@@ -37,7 +37,7 @@ function *run() {
     .wait('.pagination')
     //Click read more button of current post.
     .click('#post_list .post:nth-child('+(((i-1)*2)+6)+') .meta.last-child a')/*.wait('h1.ng-binding')*/
-    .wait(500);
+    .wait(1000);
 
     yield nightmare.on('did-get-redirect-request', function(h) {
       redirected = true;
